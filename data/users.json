@@ -1,0 +1,22 @@
+{
+  "USER_1762614911659_192": {
+    "id": "USER_1762614911659_192",
+    "name": "rama",
+    "email": "ramadafer25@gmail.com",
+    "passwordHash": "$2a$10$M6EiIlSYfTJc2QYorFqiIe94KS3nEY6XEMP50pAuQr29p8tnB4VZu",
+    "role": "USER",
+    "isActive": true,
+    "createdAt": "2025-11-08T17:15:11.6597044",
+    "updatedAt": "2025-11-08T17:15:11.6597044"
+  },
+  "USER_1762615212577_680": {
+    "id": "USER_1762615212577_680",
+    "name": "System Administrator",
+    "email": "admin@library.com",
+    "passwordHash": "$2a$10$eU96lVTmPv8xLURa9lMU9.vNL6F.GksxKdi9NUcg3BVngQtyAORFG",
+    "role": "ADMIN",
+    "isActive": true,
+    "createdAt": "2025-11-08T17:20:12.5232953",
+    "updatedAt": "2025-11-08T17:20:12.5890915"
+  }
+}

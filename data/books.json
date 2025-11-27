@@ -1,0 +1,32 @@
+{
+  "BOOK_1762614866339_659": {
+    "id": "BOOK_1762614866339_659",
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "isbn": "978-0743273565",
+    "isAvailable": true,
+    "type": "BOOK",
+    "createdAt": "2025-11-08T17:14:26.3394673",
+    "updatedAt": "2025-11-08T17:14:26.3394673"
+  },
+  "BOOK_1762614866342_301": {
+    "id": "BOOK_1762614866342_301",
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "isbn": "978-0061120084",
+    "isAvailable": true,
+    "type": "BOOK",
+    "createdAt": "2025-11-08T17:14:26.3394673",
+    "updatedAt": "2025-11-08T17:14:26.3394673"
+  },
+  "BOOK_1762614866343_205": {
+    "id": "BOOK_1762614866343_205",
+    "title": "1984",
+    "author": "George Orwell",
+    "isbn": "978-0451524935",
+    "isAvailable": true,
+    "type": "BOOK",
+    "createdAt": "2025-11-08T17:14:26.3394673",
+    "updatedAt": "2025-11-08T17:14:26.3394673"
+  }
+}

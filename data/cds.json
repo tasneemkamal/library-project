@@ -1,0 +1,50 @@
+{
+  "CD_1762614866345_287": {
+    "id": "CD_1762614866345_287",
+    "title": "Greatest Hits 2024",
+    "artist": "Various Artists",
+    "genre": "Pop",
+    "trackCount": 15,
+    "publisher": "Music Corp",
+    "releaseYear": 2024,
+    "isAvailable": true,
+    "createdAt": "2025-11-08T17:14:26.3444677",
+    "updatedAt": "2025-11-08T17:14:26.3454677"
+  },
+  "CD_1762614866348_803": {
+    "id": "CD_1762614866348_803",
+    "title": "Jazz Classics",
+    "artist": "Miles Davis",
+    "genre": "Jazz",
+    "trackCount": 10,
+    "publisher": "Jazz Records",
+    "releaseYear": 2020,
+    "isAvailable": false,
+    "createdAt": "2025-11-08T17:14:26.3444677",
+    "updatedAt": "2025-11-08T17:24:15.4698272"
+  },
+  "CD_1762614866349_818": {
+    "id": "CD_1762614866349_818",
+    "title": "Rock Anthems",
+    "artist": "Queen",
+    "genre": "Rock",
+    "trackCount": 12,
+    "publisher": "Rock Music",
+    "releaseYear": 2018,
+    "isAvailable": true,
+    "createdAt": "2025-11-08T17:14:26.3454677",
+    "updatedAt": "2025-11-08T17:14:26.3497626"
+  },
+  "CD_1762614866350_985": {
+    "id": "CD_1762614866350_985",
+    "title": "Classical Masterpieces",
+    "artist": "Beethoven",
+    "genre": "Classical",
+    "trackCount": 8,
+    "publisher": "Classical Records",
+    "releaseYear": 2019,
+    "isAvailable": true,
+    "createdAt": "2025-11-08T17:14:26.3454677",
+    "updatedAt": "2025-11-08T17:14:26.3507612"
+  }
+}
