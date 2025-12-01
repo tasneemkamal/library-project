@@ -1,5 +1,125 @@
 package library.services;
 
+import library.models.CDFine;
+import library.models.CDLoan;
+import library.repositories.CDFineRepository;
+import library.repositories.CDLoanRepository;
+
+import java.util.List;
+
+/**
+ * Service for handling CD fine operations
+ */
+public class CDFineService {
+
+    private CDFineRepository cdFineRepository;
+    private CDLoanRepository cdLoanRepository;
+
+    public CDFineService(CDFineRepository cdFineRepository, CDLoanRepository cdLoanRepository) {
+        this.cdFineRepository = cdFineRepository;
+        this.cdLoanRepository = cdLoanRepository;
+    }
+
+    /**
+     * Create a new CD fine
+     * Returns true only if fine was successfully created
+     */
+    public boolean createCDFine(String userId, String cdLoanId, double amount) {
+
+        // 1. التحقق من صحة المعرفات
+        if (userId == null || userId.trim().isEmpty() ||
+            cdLoanId == null || cdLoanId.trim().isEmpty()) {
+            return false; // رفض الغرامة كما يتوقع الاختبار
+        }
+
+        // 2. رفض المبلغ السلبي أو صفر مباشرة
+        if (amount <= 0) {
+            return false; // رفض الغرامة
+        }
+
+        // 3. جلب القرض من المخزن
+        CDLoan loan = cdLoanRepository.findById(cdLoanId);
+        if (loan == null) {
+            return false; // رفض الغرامة إذا القرض غير موجود
+        }
+
+        // 4. التأكد أن القرض متأخر
+        if (!loan.isOverdue()) {
+            return false; // رفض الغرامة إذا القرض غير متأخر
+        }
+
+        // 5. إنشاء الغرامة لأن القرض متأخر والمبلغ صالح
+        CDFine cdFine = new CDFine(userId, cdLoanId, amount);
+        return cdFineRepository.save(cdFine); // true إذا تم الإنشاء بنجاح
+    }
+
+    /**
+     * Pay CD fine
+     */
+    public boolean payCDFine(String cdFineId, double amount) {
+        CDFine cdFine = cdFineRepository.findById(cdFineId);
+        if (cdFine == null || cdFine.isPaid()) {
+            return false;
+        }
+
+        if (amount <= 0 || amount > cdFine.getRemainingAmount()) {
+            return false;
+        }
+
+        boolean paymentSuccess = cdFine.makePayment(amount);
+        if (paymentSuccess) {
+            return cdFineRepository.update(cdFine);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user has unpaid CD fines
+     */
+    public boolean hasUnpaidCDFines(String userId) {
+        List<CDFine> userCDFines = cdFineRepository.findByUserId(userId);
+        return userCDFines.stream().anyMatch(fine -> !fine.isPaid());
+    }
+
+    /**
+     * Get total unpaid CD fines of a user
+     */
+    public double getTotalUnpaidCDFines(String userId) {
+        List<CDFine> userCDFines = cdFineRepository.findByUserId(userId);
+        return userCDFines.stream()
+                .filter(fine -> !fine.isPaid())
+                .mapToDouble(CDFine::getRemainingAmount)
+                .sum();
+    }
+
+    /**
+     * Get user's CD fines
+     */
+    public List<CDFine> getUserCDFines(String userId) {
+        return cdFineRepository.findByUserId(userId);
+    }
+
+    /**
+     * Get all unpaid CD fines
+     */
+    public List<CDFine> getAllUnpaidCDFines() {
+        return cdFineRepository.findUnpaidCDFines();
+    }
+
+    /**
+     * Get CD fine by ID
+     */
+    public CDFine getCDFineById(String cdFineId) {
+        return cdFineRepository.findById(cdFineId);
+    }
+}
+
+
+
+/*
+package library.services;
+
 
 
 import library.models.CDFine;
@@ -12,6 +132,7 @@ import java.util.List;
  * @author Library Team
  * @version 1.0
  */
+/*
 public class CDFineService {
     private CDFineRepository cdFineRepository;
     private CDLoanRepository cdLoanRepository;
@@ -28,6 +149,7 @@ public class CDFineService {
      * @param amount fine amount
      * @return true if fine created successfully, false otherwise
      */
+/*
     public boolean createCDFine(String userId, String cdLoanId, double amount) {
         // Validate input parameters
         if (userId == null || userId.trim().isEmpty() || 
@@ -47,6 +169,7 @@ public class CDFineService {
      * @param amount payment amount
      * @return true if payment successful, false otherwise
      */
+/*
     public boolean payCDFine(String cdFineId, double amount) {
         CDFine cdFine = cdFineRepository.findById(cdFineId);
         if (cdFine == null || cdFine.isPaid()) {
@@ -79,6 +202,7 @@ public class CDFineService {
      * @param userId user ID
      * @return true if user has unpaid CD fines, false otherwise
      */
+/*
     public boolean hasUnpaidCDFines(String userId) {
         List<CDFine> userCDFines = cdFineRepository.findByUserId(userId);
         return userCDFines.stream().anyMatch(fine -> !fine.isPaid());
@@ -89,6 +213,7 @@ public class CDFineService {
      * @param userId user ID
      * @return total unpaid CD fine amount
      */
+/*
     public double getTotalUnpaidCDFines(String userId) {
         List<CDFine> userCDFines = cdFineRepository.findByUserId(userId);
         return userCDFines.stream()
@@ -102,6 +227,7 @@ public class CDFineService {
      * @param userId user ID
      * @return list of user's CD fines
      */
+/*
     public List<CDFine> getUserCDFines(String userId) {
         return cdFineRepository.findByUserId(userId);
     }
@@ -110,6 +236,7 @@ public class CDFineService {
      * Get all unpaid CD fines
      * @return list of all unpaid CD fines
      */
+/*
     public List<CDFine> getAllUnpaidCDFines() {
         return cdFineRepository.findUnpaidCDFines();
     }
@@ -119,7 +246,9 @@ public class CDFineService {
      * @param cdFineId CD fine ID
      * @return CD fine or null if not found
      */
+/*
     public CDFine getCDFineById(String cdFineId) {
         return cdFineRepository.findById(cdFineId);
     }
 }
+*/
