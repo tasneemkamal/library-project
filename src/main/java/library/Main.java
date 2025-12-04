@@ -8,6 +8,8 @@ import library.models.User;
 import library.models.Book;
 import library.models.CD;
 import library.config.EmailConfig;
+import io.github.cdimascio.dotenv.Dotenv;
+
 
 import java.util.Scanner;
 
@@ -94,7 +96,34 @@ public class Main {
     /**
      * Create default admin user if not exists
      */
+    
     private void createDefaultAdmin() {
+        try {
+            UserRepository userRepo = new UserRepository();
+
+            // تحميل ملف البيئة
+            Dotenv dotenv = Dotenv.load();
+            String adminEmail = dotenv.get("ADMIN_EMAIL");         // 📧 جلب الإيميل من .env
+            String adminPassword = dotenv.get("ADMIN_PASSWORD");   // 🔑 جلب كلمة السر من .env
+
+            if (userRepo.findByEmail(adminEmail) == null) {
+
+                SecurityService securityService = new SecurityService();
+                String hashedPassword = securityService.hashPassword(adminPassword);
+
+                User admin = new User("System Administrator", adminEmail, hashedPassword, "ADMIN");
+                userRepo.save(admin);
+
+                System.out.println("🔑 Default admin created using hidden credentials");
+            }
+
+        } catch (Exception e) {
+            System.err.println("Warning: Could not create default admin: " + e.getMessage());
+        }
+    }
+
+
+    /*private void createDefaultAdmin() {
         try {
             UserRepository userRepo = new UserRepository();
             if (userRepo.findByEmail("admin@library.com") == null) {
@@ -107,7 +136,7 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Warning: Could not create default admin: " + e.getMessage());
         }
-    }
+    }*/
 
     /**
      * Initialize test data for books and CDs
