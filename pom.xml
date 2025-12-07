@@ -22,7 +22,9 @@
         <javax.mail.version>1.6.2</javax.mail.version>
         <bcrypt.version>0.10.2</bcrypt.version>
     </properties>
-
+<properties>
+  <sonar.organization>library-org</sonar.organization>
+</properties>
     <dependencies>
         
         <dependency>
