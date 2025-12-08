@@ -4,4 +4,5 @@ target/
 *.lst
 *.txt
 *.exec
+non_existent_file.json
 
