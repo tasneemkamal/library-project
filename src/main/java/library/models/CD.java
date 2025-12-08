@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 
 /**
  * CD model representing a music CD in the library
- * @author Library Team
- * @version 1.0
  */
 public class CD implements MediaItem {
     private String id;
@@ -21,10 +19,26 @@ public class CD implements MediaItem {
     private String updatedAt;
 
     public CD() {}
+
     @Override
     public String getType() {
         return "CD";
     }
+
+    // === Constructor required by the test (3 parameters) ===
+    public CD(String title, String artist, String genre) {
+        this.title = title;
+        this.artist = artist;
+        this.genre = genre;
+        this.trackCount = 0;
+        this.publisher = "";
+        this.releaseYear = 0; // keep zero (tests don't care)
+        this.isAvailable = true;
+        this.createdAt = DateUtils.toString(LocalDateTime.now());
+        this.updatedAt = DateUtils.toString(LocalDateTime.now());
+    }
+
+    // === Full constructor (existing) ===
     public CD(String title, String artist, String genre, int trackCount, String publisher, int releaseYear) {
         this.title = title;
         this.artist = artist;
@@ -64,21 +78,18 @@ public class CD implements MediaItem {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-    
+
     public LocalDateTime getCreatedAtDateTime() {
         return DateUtils.fromString(createdAt);
     }
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
-    
+
     public LocalDateTime getUpdatedAtDateTime() {
         return DateUtils.fromString(updatedAt);
     }
-    
-    /**
-     * Update the updatedAt timestamp
-     */
+
     public void updateTimestamp() {
         this.updatedAt = DateUtils.toString(LocalDateTime.now());
     }
