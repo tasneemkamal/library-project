@@ -30,7 +30,6 @@ class BookRepositoryTest {
     @Test
     void shouldLoadBooksSuccessfully() {
         String json = "{\"1\":{\"id\":\"1\",\"title\":\"Book A\",\"author\":\"Author A\",\"isbn\":\"111\",\"type\":\"BOOK\"}}";
-
         when(fileHandlerMock.readFromFile(anyString())).thenReturn(json);
 
         BookRepository repo = new BookRepository(gson, fileHandlerMock);
@@ -160,7 +159,6 @@ class BookRepositoryTest {
         assertEquals("Updated Title", updated.getTitle());
     }
 
-    
     @Test
     void shouldReturnAllBooksWhenSearchQueryIsEmpty() {
         when(fileHandlerMock.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -180,7 +178,6 @@ class BookRepositoryTest {
         assertEquals(2, result3.size());
     }
 
-   
     @Test
     void shouldGenerateIdWhenSavingBookWithoutId() {
         when(fileHandlerMock.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -194,4 +191,27 @@ class BookRepositoryTest {
         assertNotNull(book.getId());
         assertTrue(book.getId().startsWith("BOOK_"));
     }
+
+    @Test
+    void shouldCreateRepositoryWithDefaultConstructor() {
+        BookRepository repo = new BookRepository();
+        assertNotNull(repo);
+        assertNotNull(repo.findAll());
+    }
+
+    @Test
+    void shouldHandleGsonParsingException() {
+        Gson brokenGson = mock(Gson.class);
+        JsonFileHandler handler = mock(JsonFileHandler.class);
+
+        when(handler.readFromFile(anyString())).thenReturn("{}");
+
+        when(brokenGson.fromJson(anyString(), any(java.lang.reflect.Type.class)))
+                .thenThrow(new RuntimeException("GSON FAILED"));
+
+        BookRepository repo = new BookRepository(brokenGson, handler);
+
+        assertTrue(repo.findAll().isEmpty());
+    }
+
 }
