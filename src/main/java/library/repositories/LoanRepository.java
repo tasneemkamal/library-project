@@ -67,9 +67,9 @@ public class LoanRepository {
    
 
     private String generateId() {
-        SecureRandom secureRandom = new SecureRandom();
-        return "LOAN_" + System.currentTimeMillis() + "_" + secureRandom.nextInt(1000);
+        return "LOAN_" + UUID.randomUUID().toString();
     }
+
 
 
     /**
