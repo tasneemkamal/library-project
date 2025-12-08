@@ -12,5 +12,86 @@
     "amount": 5.0,
     "paidAmount": 0.0,
     "isPaid": true
+  },
+  "CDFINE_1765227678613_494": {
+    "id": "CDFINE_1765227678613_494",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 50.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.612598",
+    "isPaid": false
+  },
+  "CDFINE_1765227678618_51": {
+    "id": "CDFINE_1765227678618_51",
+    "userId": "2",
+    "cdLoanId": "user456",
+    "amount": 30.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.612598",
+    "isPaid": false
+  },
+  "CDFINE_1765227678638_423": {
+    "id": "CDFINE_1765227678638_423",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 50.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6387469",
+    "isPaid": false
+  },
+  "CDFINE_1765227678641_730": {
+    "id": "CDFINE_1765227678641_730",
+    "userId": "2",
+    "cdLoanId": "user456",
+    "amount": 30.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6387469",
+    "isPaid": false
+  },
+  "CDFINE_1765227678652_336": {
+    "id": "CDFINE_1765227678652_336",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 50.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6517801",
+    "isPaid": false
+  },
+  "CDFINE_1765227678664_392": {
+    "id": "CDFINE_1765227678664_392",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 50.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6630048",
+    "isPaid": false
+  },
+  "CDFINE_1765227678666_305": {
+    "id": "CDFINE_1765227678666_305",
+    "userId": "2",
+    "cdLoanId": "user456",
+    "amount": 30.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6630048",
+    "isPaid": false
+  },
+  "CDFINE_1765227678675_768": {
+    "id": "CDFINE_1765227678675_768",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 50.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6757333",
+    "isPaid": false
+  },
+  "CDFINE_1765227678684_782": {
+    "id": "CDFINE_1765227678684_782",
+    "userId": "1",
+    "cdLoanId": "user123",
+    "amount": 60.0,
+    "paidAmount": 0.0,
+    "issuedDate": "2025-12-08T23:01:18.6843442",
+    "isPaid": false
   }
 }

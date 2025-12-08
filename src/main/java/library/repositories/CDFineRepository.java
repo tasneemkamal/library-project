@@ -21,9 +21,17 @@ public class CDFineRepository {
     private Gson gson;
     private JsonFileHandler fileHandler;
 
+    // المُنشئ الافتراضي
     public CDFineRepository() {
         this.gson = GsonUtils.createGson();
         this.fileHandler = new JsonFileHandler();
+        this.cdFines = loadCDFines();
+    }
+
+    // مُنشئ جديد يقبل JsonFileHandler
+    public CDFineRepository(JsonFileHandler fileHandler) {
+        this.gson = GsonUtils.createGson();
+        this.fileHandler = fileHandler;
         this.cdFines = loadCDFines();
     }
 
@@ -70,7 +78,6 @@ public class CDFineRepository {
         return "CDFINE_" + System.currentTimeMillis() + "_" + secureRandom.nextInt(1000); // توليد المعرف
     }
 
-
     /**
      * Save CD fine to repository
      * @param cdFine CD fine to save
@@ -115,9 +122,11 @@ public class CDFineRepository {
      */
     public List<CDFine> findUnpaidCDFines() {
         return cdFines.values().stream()
-                .filter(fine -> !fine.isPaid())
+                .filter(fine -> fine.getRemainingAmount() > 0)  // تحقق من الغرامات التي لا يزال يتبقى فيها مبلغ غير مدفوع
                 .collect(Collectors.toList());
     }
+
+
 
     /**
      * Update CD fine in repository
@@ -145,6 +154,7 @@ public class CDFineRepository {
         return new ArrayList<>(cdFines.values());
     }
 }
+
 
 
 
