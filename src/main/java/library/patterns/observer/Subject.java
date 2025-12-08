@@ -1,6 +1,5 @@
 package library.patterns.observer;
 
-
 import library.models.User;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,5 +37,13 @@ public class Subject {
         for (Observer observer : observers) {
             observer.notify(user, message);
         }
+    }
+
+    /**
+     * Getter for the observers list, used for testing
+     * @return the list of observers
+     */
+    public List<Observer> getObservers() {
+        return observers;
     }
 }
