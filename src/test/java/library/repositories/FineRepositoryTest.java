@@ -2,11 +2,9 @@ package library.repositories;
 
 import library.models.Fine;
 import library.utils.JsonFileHandler;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
+import org.mockito.Mockito;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,127 +14,108 @@ public class FineRepositoryTest {
 
     private FineRepository fineRepository;
     private JsonFileHandler fileHandlerMock;
-    private Gson gson = new Gson();
 
     @BeforeEach
-    void setUp() throws Exception {
-        // Mock file handler (we won't rely on constructor load)
+    void setup() {
         fileHandlerMock = mock(JsonFileHandler.class);
-        when(fileHandlerMock.writeToFile(anyString(), anyString())).thenReturn(true);
 
-        // Prepare fake initial fines map (use setters to avoid constructor mismatch)
-        Map<String, Fine> fakeData = new HashMap<>();
-        Fine f1 = new Fine();
-        f1.setId("F1");
-        f1.setUserId("U1");
-        f1.setAmount(50.0);
-        f1.setPaidAmount(0.0);
-        f1.setPaid(false);
-        fakeData.put("F1", f1);
+        
+        when(fileHandlerMock.readFromFile(anyString())).thenReturn("");
 
-        // Create repository normally (it will call loadFines() internally,
-        // but we'll overwrite the internal fields right after)
         fineRepository = new FineRepository();
 
-        // Inject mocks & fake data into private fields using reflection
-        injectField(FineRepository.class, fineRepository, "fileHandler", fileHandlerMock);
-        injectField(FineRepository.class, fineRepository, "gson", gson);
-        injectField(FineRepository.class, fineRepository, "fines", fakeData);
+        
+        var fileHandlerField = assertDoesNotThrow(() ->
+                FineRepository.class.getDeclaredField("fileHandler"));
+        fileHandlerField.setAccessible(true);
+        assertDoesNotThrow(() -> fileHandlerField.set(fineRepository, fileHandlerMock));
+
+      
+        when(fileHandlerMock.writeToFile(anyString(), anyString())).thenReturn(true);
     }
 
-    /** Utility to inject private fields via reflection */
-    private void injectField(Class<?> cls, Object target, String fieldName, Object value) {
-        try {
-            Field f = cls.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            f.set(target, value);
-        } catch (NoSuchFieldException e) {
-            // try in superclass (defensive)
-            try {
-                Field f = target.getClass().getSuperclass().getDeclaredField(fieldName);
-                f.setAccessible(true);
-                f.set(target, value);
-            } catch (Exception ex) {
-                throw new RuntimeException("Injection failed for field: " + fieldName, ex);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Injection failed for field: " + fieldName, e);
-        }
+    @Test
+    void testSaveNewFine() {
+        Fine fine = new Fine("user1", "loan1", 50.0);
+
+        boolean result = fineRepository.save(fine);
+
+        assertTrue(result);
+        assertNotNull(fine.getId());
+        assertEquals("user1", fine.getUserId());
     }
 
     @Test
     void testFindById() {
-        Fine f = fineRepository.findById("F1");
-        assertNotNull(f);
-        assertEquals("F1", f.getId());
-        assertEquals("U1", f.getUserId());
+        Fine fine = new Fine("user1", "loan1", 30.0);
+        fineRepository.save(fine);
+
+        Fine found = fineRepository.findById(fine.getId());
+        assertNotNull(found);
+        assertEquals("loan1", found.getLoanId());
     }
 
     @Test
     void testFindByUserId() {
-        List<Fine> list = fineRepository.findByUserId("U1");
-        assertEquals(1, list.size());
-        assertEquals("F1", list.get(0).getId());
+        Fine f1 = new Fine("userX", "l1", 10);
+        Fine f2 = new Fine("userX", "l2", 20);
+        Fine f3 = new Fine("other", "l3", 5);
+
+        fineRepository.save(f1);
+        fineRepository.save(f2);
+        fineRepository.save(f3);
+
+        List<Fine> list = fineRepository.findByUserId("userX");
+
+        assertEquals(2, list.size());
     }
 
     @Test
     void testFindUnpaidFines() {
+        Fine unpaid = new Fine("u1", "l1", 15);
+        Fine paid = new Fine("u2", "l2", 15);
+        paid.setPaid(true);
+
+        fineRepository.save(unpaid);
+        fineRepository.save(paid);
+
         List<Fine> list = fineRepository.findUnpaidFines();
+
         assertEquals(1, list.size());
         assertFalse(list.get(0).isPaid());
     }
 
     @Test
-    void testSaveNewFineGeneratesIdAndPersists() {
-        Fine newFine = new Fine();
-        newFine.setUserId("U2");
-        newFine.setAmount(30.0);
-        newFine.setPaidAmount(0.0);
-        newFine.setPaid(false);
+    void testUpdateFine() {
+        Fine fine = new Fine("user", "loan", 25);
+        fineRepository.save(fine);
 
-        boolean saved = fineRepository.save(newFine);
+        fine.setPaidAmount(10);
 
-        assertTrue(saved);
-        assertNotNull(newFine.getId()); // id should be generated
-        // confirm it's present in repository
-        boolean found = fineRepository.findAll().stream()
-                .anyMatch(f -> newFine.getId().equals(f.getId()));
-        assertTrue(found);
+        boolean result = fineRepository.update(fine);
+
+        assertTrue(result);
+        Fine updated = fineRepository.findById(fine.getId());
+        assertEquals(10, updated.getPaidAmount());
     }
 
     @Test
-    void testUpdateExistingFineSucceeds() {
-        Fine existing = fineRepository.findById("F1");
-        assertNotNull(existing);
+    void testUpdateNonExistingFine() {
+        Fine fine = new Fine("x", "y", 10);
+        fine.setId("DOES_NOT_EXIST");
 
-        existing.setPaidAmount(50.0);
-        existing.setPaid(true);
+        boolean result = fineRepository.update(fine);
 
-        boolean updated = fineRepository.update(existing);
-        assertTrue(updated);
-
-        Fine fromRepo = fineRepository.findById("F1");
-        assertEquals(50.0, fromRepo.getPaidAmount());
-        assertTrue(fromRepo.isPaid());
-    }
-
-    @Test
-    void testUpdateNonExistingFineFails() {
-        Fine non = new Fine();
-        non.setId("DOES_NOT_EXIST");
-        non.setUserId("UX");
-        non.setAmount(10.0);
-        non.setPaidAmount(0.0);
-        non.setPaid(false);
-
-        boolean updated = fineRepository.update(non);
-        assertFalse(updated);
+        assertFalse(result);
     }
 
     @Test
     void testFindAll() {
-        List<Fine> all = fineRepository.findAll();
-        assertFalse(all.isEmpty());
-        assertEquals(1, all.size()); // only F1 initially
+        fineRepository.save(new Fine("u1", "a", 10));
+        fineRepository.save(new Fine("u2", "b", 20));
+
+        List<Fine> list = fineRepository.findAll();
+
+        assertEquals(2, list.size());
     }
 }
