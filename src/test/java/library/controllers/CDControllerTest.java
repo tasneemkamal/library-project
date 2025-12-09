@@ -1,47 +1,29 @@
 package library.controllers;
 
 import library.models.CD;
-import library.models.CDLoan;
-import library.models.CDFine;
-import library.repositories.CDRepository;
-import library.repositories.UserRepository;
-import library.services.CDLoanService;
-import library.services.CDFineService;
+import library.services.CDService;
 
 import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CDLoanControllerTest {
+class CDControllerTest {
 
-    private CDLoanService cdLoanService;
-    private CDFineService cdFineService;
-    private UserRepository userRepository;
-    private CDRepository cdRepository;
-
-    private CDLoanController controller;
+    private CDService cdService;
+    private CDController controller;
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
     @BeforeEach
     void setUp() {
-        cdLoanService = mock(CDLoanService.class);
-        cdFineService = mock(CDFineService.class);
-        userRepository = mock(UserRepository.class);
-        cdRepository = mock(CDRepository.class);
-
-        controller = new CDLoanController(cdLoanService, cdFineService, userRepository, cdRepository);
-
+        cdService = mock(CDService.class);
+        controller = new CDController(cdService);
         System.setOut(new PrintStream(outputStream));
     }
 
@@ -50,156 +32,149 @@ class CDLoanControllerTest {
         System.setOut(originalOut);
     }
 
-    // ============================================================
-    // TEST viewUserCDLoans
-    // ============================================================
 
     @Test
-    void testViewUserCDLoans_NoLoans() {
-        when(cdLoanService.getUserCDLoans("user1")).thenReturn(Collections.emptyList());
+    void testAddCD_Fail() {
+        when(cdService.addCD(any(), any(), any(), anyInt(), any(), anyInt()))
+                .thenReturn(false);
 
-        controller.viewUserCDLoans("user1");
+        controller.addCD("title", "artist", "genre", 10, "pub", 2000);
 
-        String output = outputStream.toString();
-        assertTrue(output.contains("No CD loans found."));
+        assertTrue(outputStream.toString().contains("Failed to add CD"));
     }
 
     @Test
-    void testViewUserCDLoans_WithLoans() {
-        CDLoan loan = mock(CDLoan.class);
-        when(loan.getId()).thenReturn("LOAN123456789");
-        when(loan.getCdId()).thenReturn("CD001");
-        when(loan.getDueDate()).thenReturn("2025-12-31T00:00");
-        when(loan.getDueDateTime()).thenReturn(LocalDateTime.now().plusDays(5));
-        when(loan.isReturned()).thenReturn(false);
-        when(loan.isOverdue()).thenReturn(false);
+    void testAddCD_Success() {
+        when(cdService.addCD(any(), any(), any(), anyInt(), any(), anyInt()))
+                .thenReturn(true);
 
+        controller.addCD("title", "artist", "genre", 10, "pub", 2000);
+
+        assertFalse(outputStream.toString().contains("Failed"));
+    }
+
+    
+
+    @Test
+    void testSearchCDs_NoResults() {
+        when(cdService.searchCDs("rock")).thenReturn(Collections.emptyList());
+
+        controller.searchCDs("rock");
+
+        assertTrue(outputStream.toString().contains("No CDs found"));
+    }
+
+    @Test
+    void testSearchCDs_WithResults() {
+        CD cd = createCD();
+        when(cdService.searchCDs("hit")).thenReturn(List.of(cd));
+
+        controller.searchCDs("hit");
+
+        String out = outputStream.toString();
+        assertTrue(out.contains("CD Search Results"));
+        assertTrue(out.contains("Test Title"));
+        assertTrue(out.contains("Test Artist"));
+    }
+
+    
+    @Test
+    void testViewAllCDs_NoCDs() {
+        when(cdService.getAllCDs()).thenReturn(Collections.emptyList());
+
+        controller.viewAllCDs();
+
+        assertTrue(outputStream.toString().contains("No CDs available"));
+    }
+
+    @Test
+    void testViewAllCDs_WithCDs() {
+        CD cd = createCD();
+        when(cdService.getAllCDs()).thenReturn(List.of(cd));
+
+        controller.viewAllCDs();
+
+        String out = outputStream.toString();
+        assertTrue(out.contains("All CDs"));
+        assertTrue(out.contains("Test Title"));
+    }
+
+    
+
+    @Test
+    void testViewCDsByArtist_NoCDs() {
+        when(cdService.getCDsByArtist("Adele")).thenReturn(Collections.emptyList());
+
+        controller.viewCDsByArtist("Adele");
+
+        assertTrue(outputStream.toString().contains("No CDs found for artist: Adele"));
+    }
+
+    @Test
+    void testViewCDsByArtist_WithCDs() {
+        CD cd = createCD();
+        when(cdService.getCDsByArtist("Adele")).thenReturn(List.of(cd));
+
+        controller.viewCDsByArtist("Adele");
+
+        assertTrue(outputStream.toString().contains("CDs by Adele"));
+        assertTrue(outputStream.toString().contains("Test Title"));
+    }
+
+    
+    @Test
+    void testViewCDsByGenre_NoCDs() {
+        when(cdService.getCDsByGenre("Rock")).thenReturn(Collections.emptyList());
+
+        controller.viewCDsByGenre("Rock");
+
+        assertTrue(outputStream.toString().contains("No CDs found in genre: Rock"));
+    }
+
+    @Test
+    void testViewCDsByGenre_WithCDs() {
+        CD cd = createCD();
+        when(cdService.getCDsByGenre("Rock")).thenReturn(List.of(cd));
+
+        controller.viewCDsByGenre("Rock");
+
+        assertTrue(outputStream.toString().contains("Rock CDs"));
+        assertTrue(outputStream.toString().contains("Test Artist"));
+    }
+
+    
+
+    @Test
+    void testShortenString_Indirect() {
+        CD cd = createCD();
+        cd.setTitle("abcdefghijklmnopqrstuv"); // long title
+
+        when(cdService.searchCDs("long")).thenReturn(List.of(cd));
+
+        controller.searchCDs("long");
+
+        String out = outputStream.toString();
+
+        
+        String expectedShort = "abcdefghijklmno...";
+
+        assertTrue(out.contains(expectedShort),
+                "Expected shortened title not found in output. Output was:\n" + out);
+    }
+
+
+
+    
+    private CD createCD() {
         CD cd = new CD();
-        cd.setTitle("Best Hits");
-        cd.setArtist("John Doe");
-
-        when(cdLoanService.getUserCDLoans("user1")).thenReturn(List.of(loan));
-        when(cdRepository.findById("CD001")).thenReturn(cd);
-
-        controller.viewUserCDLoans("user1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("My CD Loans"));
-        assertTrue(output.contains("Best Hits"));
-        assertTrue(output.contains("John Doe"));
-    }
-
-    // ============================================================
-    // TEST viewUserCDFines
-    // ============================================================
-
-    @Test
-    void testViewUserCDFines_NoFines() {
-        when(cdFineService.getUserCDFines("user1")).thenReturn(Collections.emptyList());
-
-        controller.viewUserCDFines("user1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("No CD fines found."));
-    }
-
-    @Test
-    void testViewUserCDFines_WithFines() {
-        CDFine fine = mock(CDFine.class);
-        when(fine.getId()).thenReturn("FINE123456789");
-        when(fine.getAmount()).thenReturn(15.0);
-        when(fine.getPaidAmount()).thenReturn(5.0);
-        when(fine.getRemainingAmount()).thenReturn(10.0);
-        when(fine.isPaid()).thenReturn(false);
-
-        when(cdFineService.getUserCDFines("user1")).thenReturn(List.of(fine));
-
-        controller.viewUserCDFines("user1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("My CD Fines"));
-        assertTrue(output.contains("$15.00"));
-        assertTrue(output.contains("$5.00"));
-        assertTrue(output.contains("$10.00"));
-    }
-
-    // ============================================================
-    // TEST borrowCD
-    // ============================================================
-
-    @Test
-    void testBorrowCD_Success() {
-        when(cdLoanService.borrowCD("user1", "cd1")).thenReturn(true);
-
-        controller.borrowCD("user1", "cd1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("CD borrowed successfully"));
-    }
-
-    @Test
-    void testBorrowCD_Fail() {
-        when(cdLoanService.borrowCD("user1", "cd1")).thenReturn(false);
-
-        controller.borrowCD("user1", "cd1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Failed to borrow CD"));
-    }
-
-    // ============================================================
-    // TEST returnCD
-    // ============================================================
-
-    @Test
-    void testReturnCD_Success() {
-        when(cdLoanService.returnCD("loan1")).thenReturn(true);
-
-        controller.returnCD("loan1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("CD returned successfully"));
-    }
-
-    @Test
-    void testReturnCD_Fail() {
-        when(cdLoanService.returnCD("loan1")).thenReturn(false);
-
-        controller.returnCD("loan1");
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Failed to return CD"));
-    }
-
-    // ============================================================
-    // TEST payCDFine
-    // ============================================================
-
-    @Test
-    void testPayCDFine_InvalidAmount() {
-        controller.payCDFine("fine1", -5);
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Invalid payment amount"));
-    }
-
-    @Test
-    void testPayCDFine_Success() {
-        when(cdFineService.payCDFine("fine1", 10.0)).thenReturn(true);
-
-        controller.payCDFine("fine1", 10.0);
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("CD fine payment processed successfully"));
-    }
-
-    @Test
-    void testPayCDFine_Fail() {
-        when(cdFineService.payCDFine("fine1", 10.0)).thenReturn(false);
-
-        controller.payCDFine("fine1", 10.0);
-
-        String output = outputStream.toString();
-        assertTrue(output.contains("Failed to process CD fine payment"));
+        cd.setId("CD1234567");
+        cd.setTitle("Test Title");
+        cd.setArtist("Test Artist");
+        cd.setGenre("TestGenre");
+        cd.setTrackCount(10);
+        cd.setPublisher("pub");
+        cd.setReleaseYear(2000);
+        cd.setAvailable(true);
+        return cd;
     }
 }
