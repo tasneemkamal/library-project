@@ -126,11 +126,17 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
-            </plugin>
+           <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.0.0</version>
+    <configuration>
+        <argLine>-Xmx1024m -XX:ReservedCodeCacheSize=256m</argLine>
+        <forkCount>1</forkCount>
+        <reuseForks>true</reuseForks>
+    </configuration>
+</plugin>
+
 
             <plugin>
                 <groupId>org.jacoco</groupId>
