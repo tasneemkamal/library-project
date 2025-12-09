@@ -3,16 +3,15 @@ package library.repositories;
 import library.models.User;
 import library.utils.GsonUtils;
 import library.utils.JsonFileHandler;
-import com.google.gson.Gson;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import java.util.List;
 
 public class UserRepositoryTest {
 
@@ -47,9 +46,18 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void testSaveUser() {
-        when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
+    void testLoadUsers_InvalidJson() {
+        when(fileHandler.readFromFile("bad.json")).thenReturn("{ invalid json ");
+
+        UserRepository repo = new UserRepository("bad.json", fileHandler, gson);
+
+        assertEquals(0, repo.findAll().size());
+    }
+
+    @Test
+    void testSaveUser_Success() {
         when(fileHandler.readFromFile(anyString())).thenReturn("");
+        when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
 
         UserRepository repo = new UserRepository("save_test.json", fileHandler, gson);
 
@@ -57,14 +65,26 @@ public class UserRepositoryTest {
         user.setName("Kamal");
         user.setEmail("k@k.com");
 
-        boolean result = repo.save(user);
-
-        assertTrue(result);
+        assertTrue(repo.save(user));
         assertEquals(1, repo.findAll().size());
     }
 
     @Test
-    void testFindByEmail() {
+    void testSaveUser_Failure() {
+        when(fileHandler.readFromFile(anyString())).thenReturn("");
+        when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(false);
+
+        UserRepository repo = new UserRepository("fail.json", fileHandler, gson);
+
+        User user = new User();
+        user.setName("X");
+        user.setEmail("x@x.com");
+
+        assertFalse(repo.save(user));
+    }
+
+    @Test
+    void testFindByEmail_Found() {
         String json = "{ \"U1\": { \"id\":\"U1\", \"name\":\"Test\", \"email\":\"abc@xyz.com\" } }";
 
         when(fileHandler.readFromFile("test.json")).thenReturn(json);
@@ -78,7 +98,18 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void testDeleteUser() {
+    void testFindByEmail_NotFound() {
+        String json = "{ \"U1\": { \"id\":\"U1\", \"name\":\"Test\", \"email\":\"abc@xyz.com\" } }";
+
+        when(fileHandler.readFromFile("test.json")).thenReturn(json);
+
+        UserRepository repo = new UserRepository("test.json", fileHandler, gson);
+
+        assertNull(repo.findByEmail("notfound@x.com"));
+    }
+
+    @Test
+    void testDeleteUser_Success() {
         String json = "{ \"U1\": { \"id\":\"U1\", \"name\":\"Test\", \"email\":\"abc@xyz.com\" } }";
 
         when(fileHandler.readFromFile("test.json")).thenReturn(json);
@@ -86,10 +117,31 @@ public class UserRepositoryTest {
 
         UserRepository repo = new UserRepository("test.json", fileHandler, gson);
 
-        boolean deleted = repo.delete("U1");
+        assertTrue(repo.delete("U1"));
+        assertEquals(0, repo.findAll().size());
+    }
 
-        assertTrue(deleted);
+    @Test
+    void testDeleteUser_NotExisting() {
+        when(fileHandler.readFromFile("del.json")).thenReturn("{ }");
+
+        UserRepository repo = new UserRepository("del.json", fileHandler, gson);
+
+        assertFalse(repo.delete("XXXX"));
+    }
+
+    @Test
+    void testClearAll() {
+        String json = "{ \"A1\": { \"id\":\"A1\", \"name\":\"N\", \"email\":\"e@e.com\" } }";
+
+        when(fileHandler.readFromFile("clr.json")).thenReturn(json);
+        when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
+
+        UserRepository repo = new UserRepository("clr.json", fileHandler, gson);
+        assertEquals(1, repo.findAll().size());
+
+        repo.clearAll();
+
         assertEquals(0, repo.findAll().size());
     }
 }
-
