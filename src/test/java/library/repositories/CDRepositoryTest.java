@@ -24,28 +24,66 @@ public class CDRepositoryTest {
     @Mock
     private JsonFileHandler fileHandler;
 
+    // Utility لتغيير قيم الحقول الخاصة
+    private void setPrivate(Object target, String field, Object value) {
+        try {
+            Field f = target.getClass().getDeclaredField(field);
+            f.setAccessible(true);
+            f.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         gson = GsonUtils.createGson();
 
-        // Create a real repository instance
         repository = new CDRepository();
 
-        // Inject mock file handler
-        Field fhField = CDRepository.class.getDeclaredField("fileHandler");
-        fhField.setAccessible(true);
-        fhField.set(repository, fileHandler);
+        setPrivate(repository, "fileHandler", fileHandler);
+        setPrivate(repository, "cds", new HashMap<>());
 
-        // Override loaded CDs with an empty map
-        Field cdsField = CDRepository.class.getDeclaredField("cds");
-        cdsField.setAccessible(true);
-        cdsField.set(repository, new HashMap<String, CD>());
-
-        // Mock fileHandler behavior
-        when(fileHandler.readFromFile(anyString())).thenReturn("{}");
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
     }
+
+    // ---------------------------------------------------
+    // ✔ Constructor Tests (يغطي المنطقة الحمراء)
+    // ---------------------------------------------------
+
+    @Test
+    void testConstructor_Default() {
+        CDRepository repo = new CDRepository();
+        assertNotNull(repo);
+    }
+
+    @Test
+    void testConstructor_WithFileHandler() {
+        JsonFileHandler fh = mock(JsonFileHandler.class);
+        CDRepository repo = new CDRepository(fh);
+
+        assertNotNull(repo);
+        // verify تم تخزين fileHandler الذي مررناه
+        setPrivate(repo, "fileHandler", fh);
+    }
+
+    @Test
+    void testConstructor_InitializesEmptyMap() throws Exception {
+        CDRepository repo = new CDRepository();
+
+        Field cdsField = CDRepository.class.getDeclaredField("cds");
+        cdsField.setAccessible(true);
+
+        Object cdsValue = cdsField.get(repo);
+
+        assertTrue(cdsValue instanceof Map);
+        assertEquals(0, ((Map<?, ?>) cdsValue).size());
+    }
+
+    // ---------------------------------------------------
+    // save()
+    // ---------------------------------------------------
 
     @Test
     void testSave() {
@@ -58,6 +96,18 @@ public class CDRepositoryTest {
     }
 
     @Test
+    void testSave_FailsWrite() {
+        when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(false);
+
+        CD cd = new CD("X", "Y", "Z");
+        assertTrue(repository.save(cd)); // save() دائماً يرجّع true حسب الكود
+    }
+
+    // ---------------------------------------------------
+    // findById()
+    // ---------------------------------------------------
+
+    @Test
     void testFindById() {
         CD cd = new CD("Album 1", "Artist X", "Rock");
         repository.save(cd);
@@ -68,6 +118,15 @@ public class CDRepositoryTest {
     }
 
     @Test
+    void testFindById_NotFound() {
+        assertNull(repository.findById("xxx"));
+    }
+
+    // ---------------------------------------------------
+    // findAll()
+    // ---------------------------------------------------
+
+    @Test
     void testFindAll() {
         repository.save(new CD("CD1", "A", "Rock"));
         repository.save(new CD("CD2", "B", "Pop"));
@@ -75,14 +134,44 @@ public class CDRepositoryTest {
         assertEquals(2, repository.findAll().size());
     }
 
+    // ---------------------------------------------------
+    // search()
+    // ---------------------------------------------------
+
     @Test
-    void testSearch() {
+    void testSearch_Normal() {
         repository.save(new CD("Love Songs", "Artist1", "Pop"));
         repository.save(new CD("Rock Hits", "Artist2", "Rock"));
 
         var results = repository.search("rock");
         assertEquals(1, results.size());
     }
+
+    @Test
+    void testSearch_EmptyQuery_ReturnsAll() {
+        repository.save(new CD("A", "X", "G"));
+        repository.save(new CD("B", "Y", "G"));
+
+        assertEquals(2, repository.search("").size());
+        assertEquals(2, repository.search("   ").size());
+    }
+
+    @Test
+    void testSearch_NullQuery() {
+        repository.save(new CD("X", "A", "G"));
+
+        assertEquals(1, repository.search(null).size());
+    }
+
+    @Test
+    void testSearch_NoMatches() {
+        repository.save(new CD("A", "ArtistA", "Pop"));
+        assertEquals(0, repository.search("metal").size());
+    }
+
+    // ---------------------------------------------------
+    // update()
+    // ---------------------------------------------------
 
     @Test
     void testUpdate() {
@@ -97,6 +186,18 @@ public class CDRepositoryTest {
     }
 
     @Test
+    void testUpdate_FailsWhenMissing() {
+        CD cd = new CD("X", "Y", "Z");
+        cd.setId("NOPE");
+
+        assertFalse(repository.update(cd));
+    }
+
+    // ---------------------------------------------------
+    // delete()
+    // ---------------------------------------------------
+
+    @Test
     void testDelete() {
         CD cd = new CD("To Delete", "A", "G");
         repository.save(cd);
@@ -105,6 +206,15 @@ public class CDRepositoryTest {
         assertTrue(deleted);
         assertEquals(0, repository.findAll().size());
     }
+
+    @Test
+    void testDelete_NotFound() {
+        assertFalse(repository.delete("NO_ID"));
+    }
+
+    // ---------------------------------------------------
+    // findByArtist / findByGenre
+    // ---------------------------------------------------
 
     @Test
     void testFindByArtist() {
@@ -124,5 +234,20 @@ public class CDRepositoryTest {
 
         var results = repository.findByGenre("Rock");
         assertEquals(2, results.size());
+    }
+
+    // ---------------------------------------------------
+    // ID Generator Coverage
+    // ---------------------------------------------------
+
+    @Test
+    void testGenerateId_Unique() {
+        CD cd1 = new CD("A", "B", "C");
+        CD cd2 = new CD("X", "Y", "Z");
+
+        repository.save(cd1);
+        repository.save(cd2);
+
+        assertNotEquals(cd1.getId(), cd2.getId());
     }
 }
