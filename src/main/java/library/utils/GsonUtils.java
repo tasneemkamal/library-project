@@ -1,20 +1,26 @@
 package library.utils;
 
-
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.time.LocalDateTime;
 
 /**
- * Utility class for GSON configuration
- * @author Library Team
- * @version 1.0
+ * Utility class for creating configured Gson instances.
+ * Provides support for LocalDateTime through a custom adapter.
  */
-public class GsonUtils {
-    
+public final class GsonUtils {
+
     /**
-     * Create a Gson instance with LocalDateTime support
+     * Private constructor to prevent instantiation.
+     */
+    private GsonUtils() {
+        throw new UnsupportedOperationException("Utility class - cannot instantiate");
+    }
+
+    /**
+     * Creates a Gson instance with pretty printing enabled.
+     * Includes LocalDateTime adapter.
+     *
      * @return configured Gson instance
      */
     public static Gson createGson() {
@@ -23,9 +29,11 @@ public class GsonUtils {
                 .setPrettyPrinting()
                 .create();
     }
-    
+
     /**
-     * Create a Gson instance for compact JSON (without pretty printing)
+     * Creates a compact Gson instance (no pretty printing).
+     * Includes LocalDateTime adapter.
+     *
      * @return configured Gson instance
      */
     public static Gson createCompactGson() {
