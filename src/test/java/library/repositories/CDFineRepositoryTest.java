@@ -5,6 +5,7 @@ import library.utils.JsonFileHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,11 +20,13 @@ public class CDFineRepositoryTest {
     void setUp() {
         fileHandlerMock = mock(JsonFileHandler.class);
 
-  
+     
         when(fileHandlerMock.readFromFile("data/cdfines.json")).thenReturn(null);
 
         repository = new CDFineRepository(fileHandlerMock);
     }
+
+   
 
     @Test
     void testSave_NewFine_AssignsIdAndSaves() {
@@ -146,5 +149,56 @@ public class CDFineRepositoryTest {
         List<CDFine> all = repository.findAll();
 
         assertEquals(2, all.size());
+    }
+
+    
+    /** يغطي catch block داخل loadCDFines() */
+    @Test
+    void testLoadCDFines_InvalidJson_TriggersCatch() {
+        JsonFileHandler handler = mock(JsonFileHandler.class);
+        when(handler.readFromFile("data/cdfines.json"))
+                .thenReturn("{ invalid json");
+
+        CDFineRepository repo = new CDFineRepository(handler);
+
+        assertTrue(repo.findAll().isEmpty());  
+    }
+
+    /** يغطي catch block داخل saveCDFines() */
+    @Test
+    void testSaveCDFines_WriteFailure_TriggersCatch() {
+        JsonFileHandler handler = mock(JsonFileHandler.class);
+
+        when(handler.readFromFile("data/cdfines.json")).thenReturn(null);
+        when(handler.writeToFile(anyString(), anyString()))
+                .thenThrow(new RuntimeException("write failed"));
+
+        CDFineRepository repo = new CDFineRepository(handler);
+
+        CDFine fine = new CDFine();
+        fine.setId("ERR1");
+        fine.setUserId("U1");
+        fine.setRemainingAmount(10);
+
+        boolean result = repo.save(fine);
+
+        assertTrue(result); 
+    }
+
+    /** يغطي generateId() private method */
+    @Test
+    void testGenerateId_IsUnique() throws Exception {
+        CDFineRepository repo = new CDFineRepository();
+
+        Method method = CDFineRepository.class.getDeclaredMethod("generateId");
+        method.setAccessible(true);
+
+        String id1 = (String) method.invoke(repo);
+        String id2 = (String) method.invoke(repo);
+
+        assertNotNull(id1);
+        assertNotNull(id2);
+        assertNotEquals(id1, id2);
+        assertTrue(id1.startsWith("CDFINE_"));
     }
 }
