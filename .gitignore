@@ -5,4 +5,6 @@ target/
 *.txt
 *.exec
 non_existent_file.json
+data/*.json
+
 

@@ -2,6 +2,8 @@ package library.models;
 
 import library.utils.DateUtils;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 /**
  * CD Loan model representing a CD borrowing transaction
@@ -50,6 +52,13 @@ public class CDLoan {
 
     public String getDueDate() { return dueDate; }
     public void setDueDate(String dueDate) { this.dueDate = dueDate; }
+    
+    public void setDueDate(LocalDate date) {
+        if (date != null) {
+            this.dueDate = date.toString();
+        }
+    }
+
 
     public LocalDateTime getDueDateTime() {
         return DateUtils.fromString(dueDate);
