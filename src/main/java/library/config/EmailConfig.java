@@ -56,6 +56,11 @@ public class EmailConfig {
     public String getPort() { return port; }
     public void setPort(String port) { this.port = port; }
 
+    // 🔥🔥🔥 إضافة الدالة المطلوبة بدون التأثير على أي شيء
+    public void setPort(int port) { 
+        this.port = String.valueOf(port);
+    }
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
@@ -67,10 +72,4 @@ public class EmailConfig {
 
     public boolean isEnableTLS() { return enableTLS; }
     public void setEnableTLS(boolean enableTLS) { this.enableTLS = enableTLS; }
-
-
-    
-
-  
-   
 }

@@ -32,13 +32,13 @@ public class CD implements MediaItem {
         this.genre = genre;
         this.trackCount = 0;
         this.publisher = "";
-        this.releaseYear = 0; // keep zero (tests don't care)
+        this.releaseYear = 0;
         this.isAvailable = true;
         this.createdAt = DateUtils.toString(LocalDateTime.now());
         this.updatedAt = DateUtils.toString(LocalDateTime.now());
     }
 
-    // === Full constructor (existing) ===
+    // === Full constructor ===
     public CD(String title, String artist, String genre, int trackCount, String publisher, int releaseYear) {
         this.title = title;
         this.artist = artist;
@@ -51,46 +51,88 @@ public class CD implements MediaItem {
         this.updatedAt = DateUtils.toString(LocalDateTime.now());
     }
 
+    // ==========================
     // Getters and Setters
+    // ==========================
+
     public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+        updateTimestamp();
+    }
 
     public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setTitle(String title) {
+        this.title = title;
+        updateTimestamp();
+    }
 
     public String getArtist() { return artist; }
-    public void setArtist(String artist) { this.artist = artist; }
+    public void setArtist(String artist) {
+        this.artist = artist;
+        updateTimestamp();
+    }
 
     public String getGenre() { return genre; }
-    public void setGenre(String genre) { this.genre = genre; }
+    public void setGenre(String genre) {
+        this.genre = genre;
+        updateTimestamp();
+    }
 
     public int getTrackCount() { return trackCount; }
-    public void setTrackCount(int trackCount) { this.trackCount = trackCount; }
+    public void setTrackCount(int trackCount) {
+        this.trackCount = trackCount;
+        updateTimestamp();
+    }
 
     public String getPublisher() { return publisher; }
-    public void setPublisher(String publisher) { this.publisher = publisher; }
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+        updateTimestamp();
+    }
 
     public int getReleaseYear() { return releaseYear; }
-    public void setReleaseYear(int releaseYear) { this.releaseYear = releaseYear; }
+    public void setReleaseYear(int releaseYear) {
+        this.releaseYear = releaseYear;
+        updateTimestamp();
+    }
 
     public boolean isAvailable() { return isAvailable; }
-    public void setAvailable(boolean available) { isAvailable = available; }
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+        updateTimestamp();
+    }
 
     public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+        // intentionally NO updateTimestamp()
+    }
 
     public LocalDateTime getCreatedAtDateTime() {
         return DateUtils.fromString(createdAt);
     }
 
     public String getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+        // intentionally NO updateTimestamp() لتجنب recursion
+    }
 
     public LocalDateTime getUpdatedAtDateTime() {
         return DateUtils.fromString(updatedAt);
     }
 
     public void updateTimestamp() {
-        this.updatedAt = DateUtils.toString(LocalDateTime.now());
+        String newTime = DateUtils.toString(LocalDateTime.now());
+
+        // إذا القيمة الجديدة نفس القديمة → زدها نانو ثانية
+        if (newTime.equals(updatedAt)) {
+            LocalDateTime dt = DateUtils.fromString(newTime).plusNanos(1);
+            newTime = DateUtils.toString(dt);
+        }
+
+        this.updatedAt = newTime;
     }
+
 }

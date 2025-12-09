@@ -20,7 +20,7 @@ class NotificationServiceTest {
     // ----------------------------- MOCK MODE EMAIL TEST -----------------------------
     @Test
     void testSendEmail_MockMode() {
-        notificationService.setRealMode(false); // تفعيل الوضع المحاكي
+        notificationService.setRealMode(false);
 
         boolean result = notificationService.sendEmail(
                 "test@test.com",
@@ -28,15 +28,15 @@ class NotificationServiceTest {
                 "Test Body"
         );
 
-        assertTrue(result); // الوضع المحاكي دائمًا يعيد true
+        assertTrue(result);
     }
 
     // ----------------------------- REAL MODE WITH INVALID CONFIG -----------------------------
     @Test
     void testSendEmail_RealMode_InvalidConfig() {
-        notificationService.setRealMode(true); // تفعيل الوضع الحقيقي
+        notificationService.setRealMode(true);
 
-        EmailConfig config = new EmailConfig(); // إعدادات غير صحيحة
+        EmailConfig config = new EmailConfig(); // missing host/port
         notificationService.setEmailConfig(config);
 
         boolean result = notificationService.sendEmail(
@@ -45,7 +45,93 @@ class NotificationServiceTest {
                 "Test Body"
         );
 
-        assertFalse(result); // لا يتم الإرسال في حالة الإعدادات غير الصحيحة
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: ENABLED = FALSE -----------------------------
+    @Test
+    void testSendEmail_WhenDisabled() {
+        notificationService.setEnabled(false);
+
+        boolean result = notificationService.sendEmail(
+                "x@test.com",
+                "Sub",
+                "Body"
+        );
+
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: NULL "to" -----------------------------
+    @Test
+    void testSendEmail_NullTo() {
+        boolean result = notificationService.sendEmail(
+                null,
+                "Sub",
+                "Body"
+        );
+
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: NULL subject -----------------------------
+    @Test
+    void testSendEmail_NullSubject() {
+        boolean result = notificationService.sendEmail(
+                "a@a.com",
+                null,
+                "Body"
+        );
+
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: NULL body -----------------------------
+    @Test
+    void testSendEmail_NullBody() {
+        boolean result = notificationService.sendEmail(
+                "a@a.com",
+                "Sub",
+                null
+        );
+
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: emailConfig = null -----------------------------
+    @Test
+    void testSendEmail_NoConfig_RealMode() {
+        notificationService.setRealMode(true);
+        notificationService.setEmailConfig(null);
+
+        boolean result = notificationService.sendEmail(
+                "a@a.com",
+                "Sub",
+                "Body"
+        );
+
+        assertFalse(result);
+    }
+
+    // ----------------------------- NEW: Real mode with valid config -----------------------------
+    @Test
+    void testSendEmail_RealMode_ValidConfig() {
+        EmailConfig config = new EmailConfig();
+        config.setHost("smtp.server.com");
+        config.setPort("587");               // <<< هنا تم تعديلها إلى String
+        config.setUsername("user");
+        config.setPassword("pass");
+
+        notificationService.setRealMode(true);
+        notificationService.setEmailConfig(config);
+
+        boolean result = notificationService.sendEmail(
+                "a@a.com",
+                "Subject",
+                "Body"
+        );
+
+        assertTrue(result);
     }
 
     // ----------------------------- SEND OVERDUE REMINDER -----------------------------
@@ -54,43 +140,43 @@ class NotificationServiceTest {
         boolean result = notificationService.sendOverdueReminder(
                 user, 3, 12.50
         );
-        assertTrue(result); // تأكد من إرسال التذكير بنجاح
+        assertTrue(result);
     }
 
-    // ----------------------------- SEND OVERDUE REMINDER (String version) -----------------------------
+    // ----------------------------- String version -----------------------------
     @Test
     void testSendOverdueReminder_StringVersion() {
         boolean result = notificationService.sendOverdueReminder(
                 "kamal@test.com", "Kamal", 2, 5.0
         );
-        assertTrue(result); // تأكد من إرسال التذكير بنجاح
+        assertTrue(result);
     }
 
-    // ----------------------------- SEND WELCOME EMAIL -----------------------------
+    // ----------------------------- WELCOME EMAIL -----------------------------
     @Test
     void testSendWelcomeEmail() {
         boolean result = notificationService.sendWelcomeEmail(
                 user, "temp123"
         );
-        assertTrue(result); // تأكد من إرسال البريد الإلكتروني للترحيب
+        assertTrue(result);
     }
 
-    // ----------------------------- SEND RETURN REMINDER -----------------------------
+    // ----------------------------- RETURN REMINDER -----------------------------
     @Test
     void testSendReturnReminder() {
         boolean result = notificationService.sendReturnReminder(
                 user, "Clean Code", "2025-12-15"
         );
-        assertTrue(result); // تأكد من إرسال تذكير العودة بنجاح
+        assertTrue(result);
     }
 
-    // ----------------------------- SEND PAYMENT CONFIRMATION -----------------------------
+    // ----------------------------- PAYMENT CONFIRMATION -----------------------------
     @Test
     void testSendPaymentConfirmation() {
         boolean result = notificationService.sendPaymentConfirmation(
                 user, 20.0, 5.0
         );
-        assertTrue(result); // تأكد من إرسال تأكيد الدفع بنجاح
+        assertTrue(result);
     }
 
     // ----------------------------- GETTERS / SETTERS TEST -----------------------------
@@ -104,6 +190,7 @@ class NotificationServiceTest {
 
         EmailConfig config = new EmailConfig();
         config.setHost("smtp.server.com");
+
         notificationService.setEmailConfig(config);
         assertEquals("smtp.server.com", notificationService.getEmailConfig().getHost());
     }
@@ -119,4 +206,3 @@ class NotificationServiceTest {
         assertTrue(service.isEnabled());
     }
 }
-
