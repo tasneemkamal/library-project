@@ -1,0 +1,8 @@
+library.config
+library.controllers
+library.models
+library.patterns.observer
+library.patterns.strategy
+library.repositories
+library.services
+library.utils

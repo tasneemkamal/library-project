@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"library.config"},{"l":"library.controllers"},{"l":"library.models"},{"l":"library.patterns.observer"},{"l":"library.patterns.strategy"},{"l":"library.repositories"},{"l":"library.services"},{"l":"library.utils"}];updateSearchResults();
