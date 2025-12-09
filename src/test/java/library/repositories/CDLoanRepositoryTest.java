@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,9 +33,7 @@ public class CDLoanRepositoryTest {
         repo = new CDLoanRepository(fileHandler, gson, "data/cdloans.json");
     }
 
-    // ----------------------------------------------
-    // loadCDLoans tests
-    // ----------------------------------------------
+    
     @Test
     void testLoadCDLoans_NullJson() {
         when(fileHandler.readFromFile(anyString())).thenReturn(null);
@@ -72,9 +73,7 @@ public class CDLoanRepositoryTest {
         assertEquals("U1", r.findById("L1").getUserId());
     }
 
-    // ----------------------------------------------
-    // saveCDLoans tests
-    // ----------------------------------------------
+    
     @Test
     void testSave_Success() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -93,9 +92,7 @@ public class CDLoanRepositoryTest {
         assertFalse(repo.save(loan));
     }
 
-    // ----------------------------------------------
-    // ID Generation
-    // ----------------------------------------------
+    
     @Test
     void testGenerateId_AutoAssigned() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -107,9 +104,7 @@ public class CDLoanRepositoryTest {
         assertTrue(loan.getId().startsWith("CDLOAN_"));
     }
 
-    // ----------------------------------------------
-    // Find by ID
-    // ----------------------------------------------
+   
     @Test
     void testSaveAndFindById() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -125,9 +120,7 @@ public class CDLoanRepositoryTest {
         assertNull(repo.findById("XXX"));
     }
 
-    // ----------------------------------------------
-    // Find by userId
-    // ----------------------------------------------
+    
     @Test
     void testFindByUserId() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -144,9 +137,7 @@ public class CDLoanRepositoryTest {
         assertEquals(0, repo.findByUserId("NONE").size());
     }
 
-    // ----------------------------------------------
-    // Find by CD ID
-    // ----------------------------------------------
+   
     @Test
     void testFindByCDId() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -158,9 +149,7 @@ public class CDLoanRepositoryTest {
         assertEquals(2, repo.findByCDId("CD1").size());
     }
 
-    // ----------------------------------------------
-    // Overdue loans
-    // ----------------------------------------------
+    
     @Test
     void testFindOverdueCDLoans() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -178,9 +167,7 @@ public class CDLoanRepositoryTest {
         assertEquals("U1", list.get(0).getUserId());
     }
 
-    // ----------------------------------------------
-    // Update
-    // ----------------------------------------------
+    
     @Test
     void testUpdate_Success() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -202,9 +189,7 @@ public class CDLoanRepositoryTest {
         assertFalse(repo.update(fake));
     }
 
-    // ----------------------------------------------
-    // FindAll
-    // ----------------------------------------------
+    
     @Test
     void testFindAll() {
         when(fileHandler.writeToFile(anyString(), anyString())).thenReturn(true);
@@ -213,5 +198,37 @@ public class CDLoanRepositoryTest {
         repo.save(new CDLoan("B", "2"));
 
         assertEquals(2, repo.findAll().size());
+    }
+    @Test
+    void testLoadCDLoans_JsonParsingThrowsException() {
+        when(fileHandler.readFromFile(anyString())).thenReturn("{ \"L1\":{} }");
+
+        Gson badGson = mock(Gson.class);
+
+        Type mapType = new TypeToken<Map<String, CDLoan>>(){}.getType();
+
+        when(badGson.fromJson(anyString(), eq(mapType)))
+                .thenThrow(new RuntimeException("boom"));
+
+        CDLoanRepository r = new CDLoanRepository(fileHandler, badGson, "file.json");
+
+        assertEquals(0, r.findAll().size());
+    }
+
+
+    @Test
+    void testSaveCDLoans_WhenGsonThrowsException() {
+        Gson badGson = mock(Gson.class);
+
+        when(badGson.toJson(any()))
+                .thenThrow(new RuntimeException("json-error"));
+
+        when(fileHandler.readFromFile(anyString())).thenReturn(null);
+
+        CDLoanRepository r = new CDLoanRepository(fileHandler, badGson, "file.json");
+
+        CDLoan loan = new CDLoan("U1", "CD1");
+
+        assertFalse(r.save(loan)); 
     }
 }
