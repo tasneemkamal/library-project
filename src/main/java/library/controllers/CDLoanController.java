@@ -11,10 +11,11 @@ import library.models.CD;
 import java.util.List;
 
 public class CDLoanController {
-    private CDLoanService cdLoanService;
-    private CDFineService cdFineService;
-    private UserRepository userRepository;
-    private CDRepository cdRepository;
+
+    private final CDLoanService cdLoanService;
+    private final CDFineService cdFineService;
+    private final UserRepository userRepository;
+    private final CDRepository cdRepository;
 
     public CDLoanController(CDLoanService cdLoanService, CDFineService cdFineService,
                             UserRepository userRepository, CDRepository cdRepository) {
@@ -82,20 +83,12 @@ public class CDLoanController {
 
     public void borrowCD(String userId, String cdId) {
         boolean success = cdLoanService.borrowCD(userId, cdId);
-        if (success) {
-            System.out.println("CD borrowed successfully");
-        } else {
-            System.out.println("Failed to borrow CD");
-        }
+        System.out.println(success ? "CD borrowed successfully" : "Failed to borrow CD");
     }
 
     public void returnCD(String cdLoanId) {
         boolean success = cdLoanService.returnCD(cdLoanId);
-        if (success) {
-            System.out.println("CD returned successfully");
-        } else {
-            System.out.println("Failed to return CD");
-        }
+        System.out.println(success ? "CD returned successfully" : "Failed to return CD");
     }
 
     public void payCDFine(String cdFineId, double amount) {
@@ -105,11 +98,8 @@ public class CDLoanController {
         }
 
         boolean success = cdFineService.payCDFine(cdFineId, amount);
-        if (success) {
-            System.out.println("CD fine payment processed successfully");
-        } else {
-            System.out.println("Failed to process CD fine payment");
-        }
+        System.out.println(success ? "CD fine payment processed successfully"
+                                   : "Failed to process CD fine payment");
     }
 
     private String shortenString(String str, int maxLength) {
@@ -119,3 +109,4 @@ public class CDLoanController {
         return str.substring(0, maxLength - 3) + "...";
     }
 }
+
